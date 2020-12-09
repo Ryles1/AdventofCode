@@ -36,6 +36,8 @@ def get_contig(total, set):
         for j in range(len(set[i+1:])):
             if sum(set[i:j]) == total:
                 return set[i:j]
+            elif sum(set[i:j]) > total:
+                break
     return subset
 
 def part_2(invalid, nums):
