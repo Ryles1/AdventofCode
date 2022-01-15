@@ -11,10 +11,10 @@ def parse_instruction(string):
     else:
         command = parts[1]
         i = 2
-    topleft = parts[i].split(",")
-    bottomright = parts[i + 2].split(",")
-    tlx, tly = topleft[0], topleft[1]
-    brx, bry = bottomright[0], bottomright[1]
+    topleft = parts[i].split(',')
+    bottomright = parts[i + 2].split(',')
+    tlx, tly = int(topleft[0]), int(topleft[1])
+    brx, bry = int(bottomright[0]), int(bottomright[1])
     return command, tlx, tly, brx, bry
 
 
@@ -22,33 +22,41 @@ def count_lights(grid):
     return sum([sum(x) for x in grid])
 
 
-def toggle_row(x1, x2, grid):
-    current_row = grid[x1 : x2 + 1]
-    for x, v in enumerate(current_row):
-        current_row[x] = OFF if current_row[x] == ON else ON
-
-
-# function for turning on a row? or off an entire row?
-
-
-def part1(size=SIZE):
-    with open("./input/2015day6input.txt") as f:
-        instructions = f.readlines()
-
-    grid = [[OFF] * size] * size
+def part1(instructions, size=SIZE):
+    grid = [[OFF for __ in range(size)] for _ in range(size)]
     for instruction in instructions:
-        (
-            command,
-            top_left_x,
-            top_left_y,
-            bottom_right_x,
-            bottom_right_y,
-        ) = parse_instruction(instruction)
-    if command == "toggle":
-        for row in range(top_left_y, bottom_right_y + 1):
-            toggle_row(top_left_x, bottom_right_x)
+        command, top_left_y, top_left_x, bottom_right_y, bottom_right_x = parse_instruction(instruction)
+        for y in range(top_left_y, bottom_right_y + 1):
+            for x in range(top_left_x, bottom_right_x + 1):
+                if command == 'on':
+                    grid[y][x] = ON
+                elif command == 'off':
+                    grid[y][x] = OFF
+                else:
+                    grid[y][x] = ON if grid[y][x] == OFF else OFF
     lights_on = count_lights(grid)
     return lights_on
 
 
-print(part1())
+def part2(instructions, size=SIZE):
+    grid = [[OFF for __ in range(size)] for _ in range(size)]
+    for instruction in instructions:
+        command, top_left_y, top_left_x, bottom_right_y, bottom_right_x = parse_instruction(instruction)
+        for y in range(top_left_y, bottom_right_y + 1):
+            for x in range(top_left_x, bottom_right_x + 1):
+                if command == 'on':
+                    grid[y][x] += 1
+                elif command == 'off':
+                    grid[y][x] -= 1
+                    if grid[y][x] < 0:
+                        grid[y][x] = 0
+                else:
+                    grid[y][x] += 2
+    lights_on = count_lights(grid)
+    return lights_on
+
+if __name__ == '__main__':
+    with open('day6.txt') as f:
+        lines = f.read().split('\n')
+    print(part1(lines))
+    print(part2(lines))
