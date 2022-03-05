@@ -1,4 +1,9 @@
 from collections import deque
+import functools
+from itertools import product
+
+
+WINNING_SCORE = 21
 
 
 def get_position(pos):
@@ -34,11 +39,33 @@ def deterministic(start_p1, start_p2):
 	return min([score_p1, score_p2]) * roll_count
 
 
+@functools.lru_cache(maxsize=None)
+def quantum(pos1: int, pos2: int, score1=0, score2=0):
+	wins1 = 0
+	wins2 = 0
+
+	rolls = [sum(x) for x in product(range(1, 4), repeat=3)]
+	for roll in rolls:
+		new_p1 = get_position(pos1)
+		new_p1.rotate(-roll)
+		updated_pos1 = new_p1[0]
+		updated_score1 = score1 + updated_pos1
+
+		if updated_score1 >= WINNING_SCORE:
+			wins1 += 1
+		else:
+			new_wins2, new_wins1 = quantum(pos2, updated_pos1, score2, updated_score1)
+			wins1 += new_wins1
+			wins2 += new_wins2
+	return wins1, wins2
+
+
 if __name__ == '__main__':
-	FILENAME = '.\input\day21.txt'
+	FILENAME = r'.\input\day21.txt'
 	with open(FILENAME) as f:
 		L = f.readlines()
 		start_p1 = int(L[0][-2])
 		start_p2 = int(L[1][-2])
 
 	print(deterministic(start_p1, start_p2))
+	print(quantum(start_p1, start_p2))
