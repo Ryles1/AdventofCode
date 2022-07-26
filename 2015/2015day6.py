@@ -56,7 +56,7 @@ def part2(instructions, size=SIZE):
     return lights_on
 
 if __name__ == '__main__':
-    with open('day6.txt') as f:
-        lines = f.read().split('\n')
+    with open('./input/2015day6input.txt') as f:
+        lines = f.read().strip().split('\n')
     print(part1(lines))
     print(part2(lines))
