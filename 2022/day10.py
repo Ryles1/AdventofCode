@@ -1,3 +1,6 @@
+LIT = '#'
+DARK = '.'
+
 def parse(s):
     if s == 'noop':
         instruction = 'noop'
@@ -34,12 +37,45 @@ def part1(lines):
     return signal_strength
 
 
+def part2(lines):
+    cycle = 1
+    sprite_center = 1
+    screen = [[DARK for _ in range(40)] for _ in range(6)]
+    row = 0
+    for line in lines:
+        row = (cycle // 40) - 1 if cycle > 40 else 0
+        sprite_values = [sprite_center + adjustment for adjustment in (-1, 0, 1)]
+        horizontal_location = cycle % 40 - 1
+        instruction, value = parse(line.strip())
+        if instruction == 'noop':
+            if horizontal_location in sprite_values:
+                screen[row][horizontal_location] = LIT
+            cycle += 1
+            continue
+        else:
+            row = (cycle // 40) - 1 if cycle > 40 else 0
+            sprite_values = [sprite_center + adjustment for adjustment in (-1, 0, 1)]
+            horizontal_location = cycle % 40 - 1
+            if horizontal_location in sprite_values:
+                screen[row][horizontal_location] = LIT
+            cycle += 1
+            row = (cycle // 40) - 1 if cycle > 40 else 0
+            sprite_values = [sprite_center + adjustment for adjustment in (-1, 0, 1)]
+            horizontal_location = cycle % 40 - 1
+            if horizontal_location in sprite_values:
+                screen[row][horizontal_location] = LIT
+            cycle += 1
+        sprite_center += value
+    return screen
+
+
 
 if __name__ == '__main__':
     FILENAME = './input/day10.txt'
     with open(FILENAME) as f:
         lines = f.readlines()
 
-
     print(part1(lines))
-    #print(part2(lines))
+    screen = part2(lines)
+    for row in screen:
+        print(''.join(row))
