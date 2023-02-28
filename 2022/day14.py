@@ -50,40 +50,6 @@ def print_map(m):
             print(m[y][x], sep='', end='')
 
 
-def part1(m):
-    bottom_row = len(m)
-    sand_count = 0
-
-    overflowing = False
-    while not overflowing:
-        current_sand = [SAND_START_Y, SAND_START_X]
-        sand_count += 1
-        falling = True
-        while falling:
-            next_collision_row = get_collision_row(m, current_sand, bottom_row)
-            # if the sand goes below bottom of the map, break out of both loops
-            if next_collision_row is None:
-                # this sand doesn't count as it doesn't come to rest
-                sand_count -= 1
-                overflowing = True
-                break
-            current_sand[0] = next_collision_row - 1
-            current_col = current_sand[1]
-            # if sand moves over a column, repeat the falling step
-            if m[next_collision_row][current_col - 1] == AIR:
-                current_sand = [next_collision_row, current_col - 1]
-            elif (current_col + 1) < len(m[next_collision_row]) and m[next_collision_row][current_col + 1] == AIR:
-                current_sand = [next_collision_row, current_col + 1]
-            else:
-                m[next_collision_row - 1][current_col] = SAND
-                falling = False
-    with open('day14final.txt', 'w') as f:
-        for line in m:
-            f.write(''.join(line))
-            f.write('\n')
-    return sand_count
-
-
 def get_rock_map_list(rock_map):
     xs = [x for x, y in rock_map.keys()]
     minx = min(xs)
@@ -103,6 +69,55 @@ def get_rock_map_list(rock_map):
     return rock_map_list
 
 
+def main(m, part2=False):
+    bottom_row = len(m)
+    sand_count = 0
+    current_sand = []
+    overflowing = False
+    while not overflowing:
+        # check sand collision from previous iteration before resetting current_sand
+        if part2 and current_sand and current_sand[0] == 0:
+            break
+        current_sand = [SAND_START_Y, SAND_START_X]
+        sand_count += 1
+        falling = True
+        while falling:
+            next_collision_row = get_collision_row(m, current_sand, bottom_row)
+            # for part 1, if the sand goes below bottom of the map, break out of both loops
+            if not part2 and next_collision_row is None:
+                # this sand doesn't count as it doesn't come to rest
+                sand_count -= 1
+                overflowing = True
+                falling = False
+                break
+            current_sand[0] = next_collision_row - 1
+            current_col = current_sand[1]
+            # if sand moves over a column, repeat the falling step
+            if m[next_collision_row][current_col - 1] == AIR:
+                current_sand = [next_collision_row, current_col - 1]
+            elif (current_col + 1) < len(m[next_collision_row]) and m[next_collision_row][current_col + 1] == AIR:
+                current_sand = [next_collision_row, current_col + 1]
+            elif part2 and (current_col + 1) == len(m[next_collision_row]):
+                # add 5 columns to each row of the map and set the sand to rest
+                for i, row in enumerate(m):
+                    for _ in range(4):
+                        if i == len(m) - 1:
+                            row.append(ROCK)
+                        else:
+                            row.append(AIR)
+                m[next_collision_row - 1][current_col] = SAND
+                falling = False
+                print(f'sand rests at {next_collision_row - 1}, {current_col}')
+            else:
+                m[next_collision_row - 1][current_col] = SAND
+                falling = False
+    with open('day14final.txt', 'w') as f:
+        for line in m:
+            f.write(''.join(line))
+            f.write('\n')
+    return sand_count
+
+
 if __name__ == '__main__':
     FILENAME = './input/day14.txt'
     with open(FILENAME) as f:
@@ -115,11 +130,14 @@ if __name__ == '__main__':
         for line in rock_map1:
             f.write(''.join(line))
             f.write('\n')
-    ans1 = part1(rock_map1)
+    ans1 = main(rock_map1)
     print(ans1)
 
-    rock_map2 = rock_map1
-    rock_map2.append([AIR for _ in range(len(rock_map2[0]))])
+    rock_map2 = get_rock_map_list(rock_map)
     rock_map2.append([ROCK for _ in range(len(rock_map2[0]))])
-
-
+    with open('day14map2.txt', 'w') as f:
+        for line in rock_map2:
+            f.write(''.join(line))
+            f.write('\n')
+    ans2 = main(rock_map2, True)
+    print(ans2)
